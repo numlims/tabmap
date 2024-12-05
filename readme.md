@@ -7,7 +7,9 @@ lualatex tables.tex
 
 # install
 
-download whl from here. install whl with pip:
+download tabmap whl from
+[here](https://github.com/numlims/tabmap/releases). install whl with
+pip:
 
 ```
 pip install tabmap-<version>.whl
