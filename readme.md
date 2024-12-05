@@ -1,4 +1,4 @@
-# tabmap: db table cheatsheet
+# tabmap: db table map
 
 ```
 tabmap db_target --latex > tables.tex
