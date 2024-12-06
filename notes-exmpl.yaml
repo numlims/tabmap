@@ -1,7 +1,13 @@
 # colors and notes for database tables and fields.
+# both colors and notes are optional
 
-table:
+my_table:
   note: note for this table
-table.column:
-  note: note for the column
-  color: some color
+  color: some color for the table
+  columns: # the column field holds the entries for the tables's columns
+    my_column_a:
+      note: note for the column
+      color: some color
+    my_column_b:
+      note: note for the column
+      color: some color

@@ -83,7 +83,7 @@ def makelatex(target:str, annotations:dict) -> str:
                 out += "\\label{" + table + "." + column + "}" # todo shouldn't lowercase be guaranteed?
                 # space
                 out += " "
-                note = dig(annotations, table + "." + column + "/note")
+                note = dig(annotations, table + "/columns/" + column + "/note")
                 if note:
                     notes += totex(note) + "\\\\"
                     hasnotes = True
@@ -124,7 +124,7 @@ def makelatex(target:str, annotations:dict) -> str:
                 # line break
                 out += "\\\\ \n"
                 # if there's a note, print it
-                note = dig(annotations, table + "." + column + "/note")
+                note = dig(annotations, table + "/columns/" + column + "/note")
                 if note:
                     # indent
                     out += "\\hspace*{2em}"
