@@ -1,0 +1,7 @@
+# colors and notes for database tables and fields.
+
+table:
+  note: note for this table
+table.column:
+  note: note for the column
+  color: some color

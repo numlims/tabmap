@@ -1,4 +1,6 @@
+import yaml
 from tbl import tbl
+from dip import dig
 
 # maketext returns table summary text
 # is it prudent to pass the target or rather tbl?
@@ -17,7 +19,7 @@ def maketext(target:str) -> str:
     return out
 
 # makelatex returns table summary as latex
-def makelatex(target:str) -> str:
+def makelatex(target:str, annotations:dict) -> str:
     out = ""
 
     # latex head
@@ -56,25 +58,43 @@ def makelatex(target:str) -> str:
 
         # introduce phantomsection line, so that referencenes referring to labels in here land on this line, not in parent section
         out += "\\phantomsection\n"
-        # the table name
-        out += totex(table.upper())
+        # if there's a note for this table, put it in
+        note = dig(annotations, table + "/note")
+        if note:
+            out += "\\textit{" + totex(note) + "}"
+            # new line
+            out += "\\\\ \n"
+        # prefix table name with # so it's easier to search for it
+        out += "\\#" + totex(table.upper())
         # two blanks
         out += "\\ \\ "
         
         # print fields that are not fk
+        # collect the notes of these fields
+        notes = "\\textit{"
+        hasnotes = False
         if table in columns:
             columns[table].sort()
         for column in columns[table]:
             if not (table in fkfromtc and column in fkfromtc[table]):
                 # display name
-                out += totex(column.lower())
+                out += totex(column)
                 # label name
-                out += "\\label{" + table + "." + column.lower() + "}" # todo shouldn't lowercase be guaranteed?
+                out += "\\label{" + table + "." + column + "}" # todo shouldn't lowercase be guaranteed?
                 # space
                 out += " "
+                note = dig(annotations, table + "." + column + "/note")
+                if note:
+                    notes += totex(note) + "\\\\"
+                    hasnotes = True
+        # close notes. do they take up a line when they are empty?
+        notes += "}"
         # two line breaks
         out += "\\\\ \n"
         out += "\\\\ \n"
+        if hasnotes:
+            out += "\\hspace*{2em}" + notes
+            out += "\\\\ \n"
 
         # outgoing foreign keys from this table
         if table in fkfromtc:
@@ -103,6 +123,15 @@ def makelatex(target:str) -> str:
                 out += "}"
                 # line break
                 out += "\\\\ \n"
+                # if there's a note, print it
+                note = dig(annotations, table + "." + column + "/note")
+                if note:
+                    # indent
+                    out += "\\hspace*{2em}"
+                    # annotation text
+                    out += "\\textit{" + totex(note) + "}"
+                    # line break
+                    out += "\\\\"
             out += "\\\\ \n"
 
         # incoming foreign keys to this table

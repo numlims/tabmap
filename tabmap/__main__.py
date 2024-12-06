@@ -11,10 +11,16 @@ def main():
     parser = argparse.ArgumentParser(description="table info for db")
     parser.add_argument("target", help="a database target in .dbc file")
     parser.add_argument("--latex", help="produce tabmap latex", required=False, action="store_true")
+    parser.add_argument("-o", help="output file")
+    parser.add_argument("--notes", help="yaml notes and colors for tables and columns")
     args = parser.parse_args()
 
     if args.latex: # output latex
-        print(makelatex(args.target))
+        anno = {}
+        # read the annotation if given
+        with open(args.notes, "r") as f:
+            notes = yaml.safe_load(f)
+        print(makelatex(args.target, notes))
     else: # output plain text
         print(maketext(args.target))
 
