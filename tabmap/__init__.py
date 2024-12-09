@@ -214,13 +214,13 @@ def makelatex(target:str, annotations:dict) -> str:
 
     return out
 
-# colortabcol gives the table an other color if it differs from the field. if only field color given, color table and field this way
+# colortabcol gives seperate colors to table and field if given. if only one color is given, color the whole line this way
 def colortabcol(annotations, table, column):
     out = ""
     tablecolor = dig(annotations, table + "/color")
     columncolor = dig(annotations, table + "/columns/" + column + "/color")
-    # color the whole line if one of the colors is not given
-    # is that cool?
+    
+    # color the whole line if one of the colors is not given. is that cool?
     if (tablecolor and not columncolor) or (not tablecolor and columncolor):
         color = tablecolor
         if color is None:
