@@ -16,10 +16,11 @@ def main():
     args = parser.parse_args()
 
     if args.latex: # output latex
-        anno = {}
+        notes = {}
         # read the annotation if given
-        with open(args.notes, "r") as f:
-            notes = yaml.safe_load(f)
+        if args.notes:
+            with open(args.notes, "r") as f:
+                notes = yaml.safe_load(f)
         print(makelatex(args.target, notes))
     else: # output plain text
         print(maketext(args.target))

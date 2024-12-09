@@ -30,6 +30,10 @@ def makelatex(target:str, annotations:dict) -> str:
 \usepackage[T1]{fontenc}
 \renewcommand\familydefault{\sfdefault}
 
+% text color
+\usepackage{xcolor}
+
+% clickable links
 \usepackage[hidelinks]{hyperref}
 
 \begin{document}
@@ -61,11 +65,18 @@ def makelatex(target:str, annotations:dict) -> str:
         # if there's a note for this table, put it in
         note = dig(annotations, table + "/note")
         if note:
-            out += "\\textit{" + totex(note) + "}"
+            out += "\\textit{// " + totex(note) + "}"
             # new line
             out += "\\\\ \n"
         # prefix table name with # so it's easier to search for it
+        # is there color?
+        color = dig(annotations, table + "/color")
+        if color:
+            out += "\\textcolor{" + color + "}{"
         out += "\\#" + totex(table.upper())
+        # close color:
+        if color:
+            out += "}"
         # two blanks
         out += "\\ \\ "
         
@@ -77,15 +88,31 @@ def makelatex(target:str, annotations:dict) -> str:
             columns[table].sort()
         for column in columns[table]:
             if not (table in fkfromtc and column in fkfromtc[table]):
+                # was there a color?
+                color = dig(annotations, table + "/columns/" + column + "/color")
+                if color:
+                    out += "\\textcolor{" + color + "}{"
                 # display name
                 out += totex(column)
+                # close color
+                if color:
+                    out += "}"
                 # label name
                 out += "\\label{" + table + "." + column + "}" # todo shouldn't lowercase be guaranteed?
                 # space
                 out += " "
                 note = dig(annotations, table + "/columns/" + column + "/note")
                 if note:
-                    notes += totex(note) + "\\\\"
+                    # wrap note in color?
+                    if color:
+                        out += "\\textcolor{" + color + "}{"
+                    # note text
+                    notes += "// " + totex(note)
+                    # close color
+                    if color:
+                        out += "}"
+                    # linebreak
+                    notes += "\\\\"
                     hasnotes = True
         # close notes. do they take up a line when they are empty?
         notes += "}"
@@ -105,10 +132,26 @@ def makelatex(target:str, annotations:dict) -> str:
                 fk = fkfromtc[table][column][0]
                 # introduce a phantom section on each line, so that incoming links land right here
                 out += "\\phantomsection\n"
+                # if there's a note, print it
+                note = dig(annotations, table + "/columns/" + column + "/note")
+                if note:
+                    # indent
+                    out += "\\hspace*{2em}"
+                    # annotation text
+                    out += "\\textit{// " + totex(note) + "}"
+                    # line break
+                    out += "\\\\"
                 # blanks at the beginning of line don't seem to work, use hspace
                 out += "\\hspace*{2em}"
-                # the column name
+                # is there color
+                color = dig(annotations, table + "/columns/" + column + "/color")
+                if color:
+                    out += "\\textcolor{" + color + "}{"
+                # the outgoing column name
                 out += totex(fk.fc.lower())
+                # close color
+                if color:
+                    out += "}"
                 # label for incoming links
                 out += "\\label{" + table + "." + fk.fc.lower() + "}"
                 # two blanks
@@ -118,20 +161,11 @@ def makelatex(target:str, annotations:dict) -> str:
                 tc = fk.tc.lower()
                 out += "\\hyperref[" + tt + "." + tc + "]{"
                 # the text in the outgoing link
-                out += totex(tt + "." + tc)
+                out += colortabcol(annotations, tt, tc)
                 # closing of the link
                 out += "}"
                 # line break
                 out += "\\\\ \n"
-                # if there's a note, print it
-                note = dig(annotations, table + "/columns/" + column + "/note")
-                if note:
-                    # indent
-                    out += "\\hspace*{2em}"
-                    # annotation text
-                    out += "\\textit{" + totex(note) + "}"
-                    # line break
-                    out += "\\\\"
             out += "\\\\ \n"
 
         # incoming foreign keys to this table
@@ -162,7 +196,7 @@ def makelatex(target:str, annotations:dict) -> str:
                     # outgoing link
                     out += "\\hyperref[" + ft + "." + fc + "]{"
                     # link text
-                    out += totex(ft + "." + fc)
+                    out += colortabcol(annotations, ft, fc)
                     # close link
                     out += "}"
                     # line break
@@ -177,6 +211,49 @@ def makelatex(target:str, annotations:dict) -> str:
     out += r"""
 \end{document}
         """
+
+    return out
+
+# colortabcol gives the table an other color if it differs from the field. if only field color given, color table and field this way
+def colortabcol(annotations, table, column):
+    out = ""
+    tablecolor = dig(annotations, table + "/color")
+    columncolor = dig(annotations, table + "/columns/" + column + "/color")
+    # color the whole line if one of the colors is not given
+    # is that cool?
+    if (tablecolor and not columncolor) or (not tablecolor and columncolor):
+        color = tablecolor
+        if color is None:
+            color = columncolor
+        out += "\\textcolor{" + color + "}{"
+        out += totex(table)
+        out += "."
+        out += totex(column)
+        # close color
+        out += "}"
+        return out
+
+    # different colors
+    
+    if tablecolor:
+        out += "\\textcolor{" + tablecolor + "}{"
+    # table name
+    out += totex(table)
+    # close color
+    if tablecolor:
+        out += "}"
+
+    # seperating dot
+    out += "."
+
+    # different colors
+    if columncolor:
+        out += "\\textcolor{" + columncolor + "}{"
+    # table name
+    out += totex(column)
+    # close color
+    if columncolor:
+        out += "}"
 
     return out
 
