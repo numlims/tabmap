@@ -12,9 +12,10 @@ description = "table cheatsheet for db"
 readme = "readme.md"
 requires-python = ">=3.8"
 dependencies = [
-  "tbl @ git+https://github.com/numlims/tbl",
   "dip @ git+https://github.com/numlims/dip",
-  "pyyaml"
+  "jsonpickle",
+  "pyyaml",
+  "tbl @ git+https://github.com/numlims/tbl"
 ]
 classifiers = [
   "Programming Language :: Python :: 3"
